@@ -1,6 +1,10 @@
 import { useEffect, useReducer } from "react";
 import Header from "./Header";
 import Main from "./Main";
+import Loader from "./Loader";
+import Error from "./Error";
+import StartScreen from "./StartScreen";
+import Question from "./Question";
 
 const initialState = {
   questions: [],
@@ -14,14 +18,17 @@ function reducer(state, action) {
       return { ...state, questions: action.payload, status: "ready" };
     case "dataFailed":
       return { ...state, status: "error" };
+    case "startQuestion":
+      return { ...state, status: "active" };
     default:
       throw new Error("unknown type");
   }
 }
 
 function App() {
-  const [state, dispatch] = useReducer(reducer, initialState);
+  const [{ questions, status }, dispatch] = useReducer(reducer, initialState);
 
+  const qNum = questions.length;
   // useEffect(function () {
   //   async function getData() {
   //     const res = await fetch("http://localhost:8000/questions");
@@ -38,12 +45,20 @@ function App() {
       .catch((err) => dispatch({ type: "dataFailed" }));
   }, []);
 
+  function handleStartQuestions() {
+    dispatch({ type: "startQuestion" });
+  }
+
   return (
     <div className="app">
       <Header />
       <Main>
-        <p>1/15</p>
-        <p>Question</p>
+        {status === "loading" && <Loader />}
+        {status === "error" && <Error />}
+        {status === "ready" && (
+          <StartScreen arraySize={qNum} onClickStart={handleStartQuestions} />
+        )}
+        {status === "active" && <Question />}
       </Main>
     </div>
   );
