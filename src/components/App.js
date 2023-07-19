@@ -5,13 +5,15 @@ import Loader from "./Loader";
 import Error from "./Error";
 import StartScreen from "./StartScreen";
 import Question from "./Question";
+import NextButton from "./NextButton";
 
 const initialState = {
   questions: [],
-  // loading error ready active finish
+  // status = loading, error, ready, active, finish,
   status: "loading",
   index: 0,
   answer: null,
+  points: 0,
 };
 
 function reducer(state, action) {
@@ -23,7 +25,17 @@ function reducer(state, action) {
     case "startQuestion":
       return { ...state, status: "active" };
     case "newAnswer":
-      return { ...state, answer: action.payload };
+      const question = state.questions.at(state.index);
+      return {
+        ...state,
+        answer: action.payload,
+        points:
+          action.payload === question.correctOption
+            ? state.points + question.points
+            : state.points,
+      };
+    case "nextQuestion":
+      return { ...state, index: state.index + 1, answer: null };
     default:
       throw new Error("unknown type");
   }
@@ -36,14 +48,6 @@ function App() {
   );
 
   const qNum = questions.length;
-  // useEffect(function () {
-  //   async function getData() {
-  //     const res = await fetch("http://localhost:8000/questions");
-  //     const data = res.json();
-  //     console.log(data);
-  //   }
-  //   getData();
-  // }, []);
 
   useEffect(function () {
     fetch("http://localhost:8000/questions")
@@ -66,11 +70,14 @@ function App() {
           <StartScreen arraySize={qNum} onClickStart={handleStartQuestions} />
         )}
         {status === "active" && (
-          <Question
-            question={questions[index]}
-            dispatch={dispatch}
-            answer={answer}
-          />
+          <>
+            <Question
+              question={questions[index]}
+              dispatch={dispatch}
+              answer={answer}
+            />
+            <NextButton dispatch={dispatch} answer={answer} />
+          </>
         )}
       </Main>
     </div>
