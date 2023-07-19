@@ -10,6 +10,7 @@ const initialState = {
   questions: [],
   // loading error ready active finish
   status: "loading",
+  index: 0,
 };
 
 function reducer(state, action) {
@@ -26,7 +27,10 @@ function reducer(state, action) {
 }
 
 function App() {
-  const [{ questions, status }, dispatch] = useReducer(reducer, initialState);
+  const [{ questions, status, index }, dispatch] = useReducer(
+    reducer,
+    initialState
+  );
 
   const qNum = questions.length;
   // useEffect(function () {
@@ -58,7 +62,7 @@ function App() {
         {status === "ready" && (
           <StartScreen arraySize={qNum} onClickStart={handleStartQuestions} />
         )}
-        {status === "active" && <Question />}
+        {status === "active" && <Question question={questions[index]} />}
       </Main>
     </div>
   );
